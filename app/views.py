@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CustomRegisterForm,CustomClientForm
+from .forms import UserRegisterForm, CustomClientForm, ClientRegisterForm
 from .models import Placement, PlacementBid, Bid, Client
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login
@@ -8,33 +8,55 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Sum, Avg, Count
+from .decorators import client_required, user_required
 
 
+# User view
 def register(request):
     if request.method == 'POST':
-        form = CustomRegisterForm(request.POST)
+        form = UserRegisterForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('app:login')
     else:
-        form = CustomRegisterForm()
-    
+        form = UserRegisterForm()
+
     context = {'form': form}
 
     return render(request, 'register.html', context)
 
+
+# client view
+def register22(request):
+    if request.method == 'POST':
+        form = ClientRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('app:login')
+    else:
+        form = ClientRegisterForm()
+
+    context = {'form': form}
+
+    return render(request, 'signupform.html', context)
+
+
+@login_required
+@client_required
 def client(request):
     if request.method == 'POST':
         form = CustomClientForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('app:placement')
+            return redirect('app:placements')
     else:
         form = CustomClientForm()
-    
+
     context = {'form': form}
 
     return render(request, 'client.html', context)
+
+
 def login(request):
     if request.method == 'POST':
 
@@ -47,14 +69,13 @@ def login(request):
             auth_login(request, user)
             return redirect('app:home')
         else:
-            return render(request, 'login.html') 
-            
+            return render(request, 'login.html')
+
     else:
-        return render(request, 'login.html') 
+        return render(request, 'login.html')
 
 
 def home(request):
-
     return render(request, 'home.html')
 
 
@@ -66,7 +87,6 @@ def logout(request):
 
 @login_required
 def placements(request):
-    
     all_placements = Placement.objects.all()
 
     paginator = Paginator(all_placements, 18)
@@ -80,7 +100,6 @@ def placements(request):
 
 @login_required
 def placement_detail(request, placement_slug):
-
     placement = get_object_or_404(Placement, placement_slug=placement_slug)
 
     if request.method == 'POST':
@@ -89,15 +108,15 @@ def placement_detail(request, placement_slug):
 
         # Create or store Bid object based on conditional
         bid_queryset = Bid.objects.filter(user=request.user, bid_status=False)
-        
+
         if bid_queryset.exists():
             bid = bid_queryset[0]
         else:
             bid = Bid.objects.create(user=request.user)
-        
+
         # Create PlacementBid given the above objects
-        placement_bid = PlacementBid.objects.create(user=request.user, 
-                                                    placement=placement, 
+        placement_bid = PlacementBid.objects.create(user=request.user,
+                                                    placement=placement,
                                                     bid=bid,
                                                     offer=submitted_amount,
                                                     shares=submitted_quantity)
@@ -110,7 +129,6 @@ def placement_detail(request, placement_slug):
 
 @login_required
 def bid_summary(request):
-
     bids = PlacementBid.objects.filter(user=request.user)
 
     context = {'bids': bids}
@@ -118,12 +136,11 @@ def bid_summary(request):
     return render(request, 'bid-summary.html', context)
 
 
-
 @login_required
+@client_required
 def confirm_bids(request):
-
     bids_queryset = PlacementBid.objects.filter(user=request.user, confirmed=False)
-    
+
     if bids_queryset.exists():
 
         # First get the order ID
@@ -133,7 +150,7 @@ def confirm_bids(request):
         for bid in bids_queryset:
             bid.confirmed = True
             bid.save()
-        
+
         # Update the Bid object status
         bid = Bid.objects.filter(id=bid_id)[0]
         bid.bid_status = True
@@ -143,36 +160,34 @@ def confirm_bids(request):
 
 
 def about(request):
-
     return render(request, 'about.html')
 
 
 @login_required
 def dashboard(request):
-    
     # Get tile data
-    total_companies = Company.objects.count()
+    # total_companies = Company.objects.count()
     total_users = User.objects.count()
     total_placements = Placement.objects.count()
     total_offers = PlacementBid.objects.aggregate(Sum('offer'))['offer__sum']
     total_offers_k = total_offers // 1000
-    
+
     # Get aggregate data
-    top_5 = PlacementBid.objects\
-                    .values('placement__placement_company__company_name', 'offer')\
-                    .annotate(Sum('offer'))\
-                    .order_by('-offer')[:5]
+    top_5 = PlacementBid.objects \
+                .values('placement__placement_company__company_name', 'offer') \
+                .annotate(Sum('offer')) \
+                .order_by('-offer')[:5]
 
     top_5_offer_names = [item['placement__placement_company__company_name'] for item in top_5]
     top_5_offer_names = [name[:8] + '...' for name in top_5_offer_names]
     top_5_offer_values = [item['offer'] for item in top_5]
 
     # Store context
-    context = {'total_companies':total_companies,
-                'total_users':total_users,
-                'total_placements':total_placements,
-                'total_offers':total_offers_k,
-                'top_5_offer_names':top_5_offer_names,
-                'top_5_offer_values':top_5_offer_values}
+    context = {'total_companies': total_companies,
+               'total_users': total_users,
+               'total_placements': total_placements,
+               'total_offers': total_offers_k,
+               'top_5_offer_names': top_5_offer_names,
+               'top_5_offer_values': top_5_offer_values}
 
     return render(request, 'dashboard.html', context)
