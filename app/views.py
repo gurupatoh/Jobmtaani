@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import UserRegisterForm, CustomClientForm, ClientRegisterForm
 from .models import Placement, PlacementBid, Bid, Client
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import authenticate
@@ -9,10 +9,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Sum, Avg, Count
 from .decorators import client_required, user_required
-
+user=get_user_model
 
 # User view
+
 def register(request):
+    return render(request, 'signupform.html')
+
+def register_user(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
@@ -27,18 +31,18 @@ def register(request):
 
 
 # client view
-def register22(request):
+def register_client(request):
     if request.method == 'POST':
         form = ClientRegisterForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('app:login')
+          form.save()
+        return redirect('app:login')
     else:
         form = ClientRegisterForm()
 
     context = {'form': form}
 
-    return render(request, 'signupform.html', context)
+    return render(request, 'register.html', context)
 
 
 @login_required
@@ -167,7 +171,7 @@ def about(request):
 def dashboard(request):
     # Get tile data
     # total_companies = Company.objects.count()
-    total_users = User.objects.count()
+    total_users = user.objects.count()
     total_placements = Placement.objects.count()
     total_offers = PlacementBid.objects.aggregate(Sum('offer'))['offer__sum']
     total_offers_k = total_offers // 1000

@@ -1,17 +1,20 @@
 from django.db import models
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
 
 
 # Create your models here.
 # user and client
-class User(AbstractUser):
+class CustomUser(AbstractUser):
     is_user = models.BooleanField(default=False)
     is_client = models.BooleanField(default=False)
-    user_name=models.CharField(max_length=120)
+    first_name=models.CharField(max_length=120)
+    last_name=models.CharField(max_length=120)
     user_location = models.CharField(max_length = 150)
-    user_email=models.EmailField()
+    email=models.EmailField(unique=True)
+
+    def __str__(self):
+        return self.first_name
 
   
 class Client(models.Model):
@@ -19,12 +22,21 @@ class Client(models.Model):
     Simply contains company details, referenced by Placement model
     """
 
-    client_name = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    client_address = models.CharField(max_length=255)
+    client_name = models.CharField(max_length=120,default='clientname')
+    email=models.EmailField(default='patrickn0023@gmail.com',unique=True)
+    client_location = models.CharField(max_length=255)
     client_description = models.TextField(default="There is currently no description available for this company.")
+    password=models.CharField(max_length=100)
+    Confirmpassword=models.CharField(max_length=100)
 
+
+    username = None
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
     def __str__(self):
         return self.client_name
+
 
 
 class Placement(models.Model):

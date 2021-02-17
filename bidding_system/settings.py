@@ -25,13 +25,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'app', # new
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app',
         'crispy_forms'
 
 ]
@@ -122,7 +122,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # custom  django auth settings
-AUTH_USER_MODEL = 'app.User'
+AUTH_USER_MODEL = 'app.CustomUser'
 
 LOGIN_URL='/login/'
 # Messages built-in framework
