@@ -12,30 +12,32 @@ class CustomUser(AbstractUser):
     last_name=models.CharField(max_length=120)
     user_location = models.CharField(max_length = 150)
     email=models.EmailField(unique=True)
-
+    email=models.EmailField(default='patrickn0023@gmail.com',unique=True)
+    client_location = models.CharField(max_length=255,default='ruiru')
+    client_description = models.TextField(default="There is currently no description available for this company.")
     def __str__(self):
         return self.first_name
 
   
-class Client(models.Model):
-    """
-    Simply contains company details, referenced by Placement model
-    """
+# class Client(models.Model):
+#     """
+#     Simply contains company details, referenced by Placement model
+#     """
 
-    client_name = models.CharField(max_length=120,default='clientname')
-    email=models.EmailField(default='patrickn0023@gmail.com',unique=True)
-    client_location = models.CharField(max_length=255)
-    client_description = models.TextField(default="There is currently no description available for this company.")
-    password=models.CharField(max_length=100)
-    Confirmpassword=models.CharField(max_length=100)
+#     client_name = models.CharField(max_length=120,default='clientname')
+#     email=models.EmailField(default='patrickn0023@gmail.com',unique=True)
+#     client_location = models.CharField(max_length=255)
+#     client_description = models.TextField(default="There is currently no description available for this company.")
+#     password=models.CharField(max_length=100)
+#     Confirmpassword=models.CharField(max_length=100)
 
 
-    username = None
+#     username = None
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
-    def __str__(self):
-        return self.client_name
+#     USERNAME_FIELD = 'email'
+#     REQUIRED_FIELDS = []
+#     def __str__(self):
+#         return self.client_name
 
 
 

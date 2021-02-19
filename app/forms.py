@@ -1,4 +1,4 @@
-from .models import Placement, Client,CustomUser
+from .models import Placement,CustomUser
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.db import transaction
@@ -23,13 +23,11 @@ class UserRegisterForm(UserCreationForm):
 
 
 # generate from for client
-class ClientRegisterForm(ModelForm):
-        password = forms.CharField(widget=forms.PasswordInput)
-        Confirmpassword = forms.CharField(widget=forms.PasswordInput)
+class ClientRegisterForm(UserCreationForm):
 
         class Meta:
-            model = Client
-            fields =['client_name','client_location','client_description','password','Confirmpassword']
+            model = CustomUser
+            fields =['client_location','client_description','username']
 
         def save(self, commit=True):
             user = super().save(commit=False)
