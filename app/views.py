@@ -132,6 +132,7 @@ def placement_detail(request, placement_slug):
 
 
 @login_required
+@client_required
 def bid_summary(request):
     bids = PlacementBid.objects.filter(user=request.user)
 
