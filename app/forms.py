@@ -27,7 +27,7 @@ class ClientRegisterForm(UserCreationForm):
 
         class Meta:
             model = CustomUser
-            fields =['client_location','client_description','username']
+            fields =['client_location','client_description','username','email']
 
         def save(self, commit=True):
             user = super().save(commit=False)
