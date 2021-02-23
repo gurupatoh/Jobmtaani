@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
     first_name=models.CharField(max_length=120)
     last_name=models.CharField(max_length=120)
     user_location = models.CharField(max_length = 150)
-    email=models.EmailField()
+    email=models.EmailField(unique=True)
     client_location = models.CharField(max_length=255)
     client_description = models.TextField()
     def __str__(self):

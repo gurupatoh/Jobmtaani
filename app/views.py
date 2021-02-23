@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import UserRegisterForm, CustomClientForm, ClientRegisterForm
-from .models import Placement, PlacementBid, Bid
+from .models import Placement, PlacementBid, Bid, CustomUser
 from django.contrib.auth import get_user_model
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -9,12 +9,17 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Sum, Avg, Count
 from .decorators import client_required, user_required
-user=get_user_model
+from django.views.decorators.csrf import csrf_exempt
+
+
+user = get_user_model
+
 
 # User view
 
 def register(request):
     return render(request, 'signupform.html')
+
 
 def register_user(request):
     if request.method == 'POST':
@@ -35,7 +40,7 @@ def register_client(request):
     if request.method == 'POST':
         form = ClientRegisterForm(request.POST)
         if form.is_valid():
-          form.save()
+            form.save()
         return redirect('app:login')
     else:
         form = ClientRegisterForm()
@@ -60,23 +65,38 @@ def client(request):
 
     return render(request, 'client.html', context)
 
-
+@csrf_exempt
 def login(request):
     if request.method == 'POST':
-
         username = request.POST['username']
         password = request.POST['password']
-
         user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            auth_login(request, user)
+        client_obj=CustomUser.objects.filter(is_client=True).order_by('id')
+        print(client_obj)
+        user_obj=CustomUser.objects.filter(is_user=True).order_by('id')
+        print(user_obj)
+        if user.is_authenticated:
+            auth_login(request,user)
             return redirect('app:home')
-        else:
-            return render(request, 'login.html')
+
+
+           
+        # elif user.is_authenticated  :
+        #      return redirect('app:placements')
+
 
     else:
         return render(request, 'login.html')
+
+       
+
+    
+
+
+
+                    
+
+  
 
 
 def home(request):
